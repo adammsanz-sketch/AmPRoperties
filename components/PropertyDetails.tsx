@@ -11,9 +11,10 @@ interface PropertyDetailsProps {
   onClose: () => void;
   isSaved: boolean;
   onSaveToggle: (id: number) => void;
+  onInquiry: (property: Property) => void;
 }
 
-const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onClose, isSaved, onSaveToggle }) => {
+const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onClose, isSaved, onSaveToggle, onInquiry }) => {
 
   // Handle clicks on the modal content to prevent closing when user interacts with the details
   const handleContentClick = (e: React.MouseEvent) => {
@@ -106,8 +107,10 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, onClose, is
                 </div>
              </div>
              <div className="flex items-center gap-4">
-                 <button className="flex-1 bg-hit-red text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition-colors">
-                    Contact Agent
+                 <button 
+                    onClick={() => onInquiry(property)}
+                    className="flex-1 bg-hit-red text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition-colors">
+                    Send Inquiry
                  </button>
                  <button
                     onClick={() => onSaveToggle(property.id)}

@@ -31,3 +31,13 @@ export interface ContactSubmission {
   message: string;
   date: string;
 }
+
+export interface PropertyInquiry {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  propertyId: number;
+  propertyName: string;
+  date: string;
+}

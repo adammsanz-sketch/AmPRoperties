@@ -13,6 +13,7 @@ import WhyChooseUs from './components/WhyChooseUs';
 import Testimonials from './components/Testimonials';
 import AdminDashboard from './components/AdminDashboard';
 import ContactPage from './components/ContactPage';
+import InquiryPage from './components/InquiryPage';
 
 // Moved from FeaturedProperties to be accessible at the App level
 const initialProperties: Property[] = [];
@@ -21,11 +22,12 @@ const initialProperties: Property[] = [];
 const App: React.FC = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [viewMode, setViewMode] = useState<'all' | 'saved'>('all');
-  const [currentPage, setCurrentPage] = useState<'home' | 'signin' | 'signup' | 'admin' | 'contact'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'signin' | 'signup' | 'admin' | 'contact' | 'inquiry'>('home');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [savedPropertyIds, setSavedPropertyIds] = useState<number[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [inquiryProperty, setInquiryProperty] = useState<Property | null>(null);
 
   // Effect to load properties from localStorage or initialize
   useEffect(() => {
@@ -186,6 +188,13 @@ const App: React.FC = () => {
     setSelectedProperty(null);
   };
 
+  const handleInquiryClick = (property: Property) => {
+    setSelectedProperty(null); // Close details modal
+    setInquiryProperty(property);
+    setCurrentPage('inquiry');
+    window.scrollTo(0, 0);
+  };
+
   const handleSignUp = (name: string, email: string, password: string): { success: boolean, message: string } => {
     const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
     const userExists = storedUsers.some((user: any) => user.email === email);
@@ -237,6 +246,19 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Failed to save contact submission', error);
       return { success: false, message: 'Failed to send message. Please try again.' };
+    }
+  };
+
+  const handlePropertyInquirySubmit = (name: string, email: string, phone: string, message: string, propertyId: number, propertyName: string): { success: boolean; message: string; } => {
+    try {
+      const submissions = JSON.parse(localStorage.getItem('propertyInquiries') || '[]');
+      const newSubmission = { name, email, phone, message, propertyId, propertyName, date: new Date().toISOString() };
+      submissions.push(newSubmission);
+      localStorage.setItem('propertyInquiries', JSON.stringify(submissions));
+      return { success: true, message: 'Your inquiry has been sent successfully!' };
+    } catch (error) {
+      console.error('Failed to save inquiry submission', error);
+      return { success: false, message: 'Failed to send inquiry. Please try again.' };
     }
   };
 
@@ -298,6 +320,25 @@ const App: React.FC = () => {
             <Footer />
           </div>
         )
+      case 'inquiry':
+        if (!inquiryProperty) {
+            // Fallback if page is accessed directly without a property
+            handlePageNavigate('home');
+            return null;
+        }
+        return (
+            <div className="flex flex-col flex-1">
+                {sidebar}
+                {header}
+                <InquiryPage
+                    property={inquiryProperty}
+                    currentUser={currentUser}
+                    onInquirySubmit={handlePropertyInquirySubmit}
+                    onNavigateHome={() => handlePageNavigate('home')}
+                />
+                <Footer />
+            </div>
+        );
       case 'home':
       default:
         return (
@@ -332,6 +373,7 @@ const App: React.FC = () => {
           onClose={handleDeselectProperty}
           isSaved={savedPropertyIds.includes(selectedProperty.id)}
           onSaveToggle={handleSaveToggle}
+          onInquiry={handleInquiryClick}
         />
        )}
     </div>
